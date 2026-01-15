@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Dashboard</title>
+  <meta charset="UTF-8"/>
+
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 40px;
+    }
+    button {
+        padding: 10px;
+        margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Welcome to Dashboard</h2>
+<p id="user"></p>
+
+<button onclick="logout()">Logout</button>
+
+<script>
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+      window.location.href = "/login";
+  }
+
+  async function loadUser() {
+      const response = await fetch("/api/me", {
+          headers: {
+              "Authorization": "Bearer " + token
+          }
+      });
+
+      if (response.status === 401) {
+          logout();
+          return;
+      }
+
+      const user = await response.json();
+      document.getElementById("user").innerText =
+          `Logged in as ${user.email}`;
+  }
+
+  function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+  }
+
+  loadUser();
+</script>
+
+</body>
+</html>

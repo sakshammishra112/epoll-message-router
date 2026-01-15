@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login | ChatApp</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Modern Reset and Variables */
+        :root {
+            --primary: #4a90e2;
+            --bg: #f0f2f5;
+            --white: #ffffff;
+            --text: #333333;
+            --error-red: #dc3545;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Single centered card */
+        .login-container {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box; /* Critical for width fixing */
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        #error {
+            color: var(--error-red);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            min-height: 1.2rem;
+        }
+
+        .footer-links {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .footer-links a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Login</h2>
+
+    <div class="form-group">
+        <input id="email" type="email" placeholder="Email" autocomplete="username"/>
+    </div>
+
+    <div class="form-group">
+        <input id="password" type="password" placeholder="Password" autocomplete="current-password"/>
+    </div>
+
+    <button type="button" onclick="login()">Login</button>
+
+    <p id="error"></p>
+
+    <div class="footer-links">
+        New here? <a href="/register">Create an account</a>
+    </div>
+</div>
+
+<script>
+    async function login() {
+        const errorEl = document.getElementById("error");
+        errorEl.innerText = ""; // Reset error
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        if (!email || !password) {
+            errorEl.innerText = "Please enter both email and password.";
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            // Handle non-JSON responses gracefully
+            const contentType = response.headers.get("content-type");
+            let data;
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            }
+
+            if (response.ok && data?.token) {
+                localStorage.setItem("AUTH_TOKEN", data.token);
+                window.location.href = "/chat";
+            } else {
+                errorEl.innerText = data?.error || "Login failed. Check your credentials.";
+            }
+        } catch (err) {
+            errorEl.innerText = "Server error. Please try again later.";
+        }
+    }
+
+    // Single listener for Enter key
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            login();
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Elegant Chat</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --sidebar-bg: #f8f9fa;
+            --border-color: #e0e0e0;
+            --text-main: #333;
+            --text-muted: #777;
+            --bg-body: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #app-wrapper {
+            width: 95vw;
+            max-width: 1000px;
+            height: 85vh;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* TOP HEADER */
+        header {
+            padding: 15px 25px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h2 { margin: 0; font-size: 1.2rem; color: var(--primary-color); }
+
+        #status { font-size: 0.8rem; color: #28a745; }
+
+        /* NEW CHAT AREA */
+        .new-chat-bar {
+            padding: 10px 25px;
+            background: #fff;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        input[type="email"], #messageInput {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input:focus { border-color: var(--primary-color); }
+
+        button {
+            padding: 10px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        /* MAIN LAYOUT */
+        #container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* FRIENDS SIDEBAR */
+        #friends-panel {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        #friends-panel h3 {
+            padding: 15px 20px;
+            margin: 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        #friends {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #friends li {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #friends li:hover { background: #e9ecef; }
+        #friends li.active { background: #fff; border-left: 4px solid var(--primary-color); }
+
+        .badge {
+            background: #ff4757;
+            color: white;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* CHAT AREA */
+        #chat-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+        }
+
+        #chat-header {
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        #messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #fafafa;
+        }
+
+        .msg-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .msg-received {
+            align-self: flex-start;
+            background: #e4e6eb;
+            color: #050505;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-sent {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-sender {
+            font-size: 0.7rem;
+            margin-bottom: 4px;
+            display: block;
+            color: var(--text-muted);
+        }
+
+        /* INPUT AREA */
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .presence-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.presence-dot.online {
+    background-color: #22c55e; /* green */
+}
+
+.presence-dot.offline {
+    background-color: #9ca3af; /* gray */
+}
+
+.friend-email {
+    margin-right: 6px;
+}
+
+.badge {
+    background: #ef4444;
+    color: white;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+    </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+    <header>
+        <h2>ChatApp</h2>
+        <div id="status">Connecting...</div>
+    </header>
+
+    <div class="new-chat-bar">
+        <input id="newChatEmail" type="email" placeholder="New chat email..."/>
+        <button onclick="startNewChat()">Start Chat</button>
+    </div>
+
+    <div id="container">
+        <div id="friends-panel">
+            <h3>Contacts</h3>
+            <ul id="friends"></ul>
+        </div>
+
+        <div id="chat-box">
+            <div id="chat-header">
+                <span id="chat-with">Select a friend to start messaging</span>
+            </div>
+
+            <div id="messages">
+            </div>
+
+            <div class="input-area">
+                <input id="messageInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage()"/>
+                <button type="button" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* =========================
+       STATE & LOGIC (UNCHANGED)
+    ========================= */
+    const conversations = {};
+    let currentChatEmail = null;
+    const presence = {}; // email -> boolean (online/offline)
+
+
+    const token = localStorage.getItem("AUTH_TOKEN");
+    if (!token) {
+        window.location.href = "/login";
+    }
+
+    const ws = new WebSocket(
+        "ws://localhost:8080/ws/chat",
+        ["jwt", token]
+    );
+
+    ws.onopen = () => {
+        document.getElementById("status").innerText = "● Online";
+        loadFriends();
+    };
+
+    ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+
+    /* =========================
+       PRESENCE EVENT
+    ========================= */
+    if (msg.online !== undefined && msg.email) {
+        presence[msg.email] = msg.online;
+
+        // refresh friend list to update online dot
+        loadFriends();
+        return;
+    }
+
+    /* =========================
+       CHAT MESSAGE
+    ========================= */
+    if (msg.from && msg.text) {
+        const fromEmail = msg.from;
+
+        if (!conversations[fromEmail]) {
+            conversations[fromEmail] = [];
+        }
+
+        conversations[fromEmail].push({
+            from: fromEmail,
+            text: msg.text
+        });
+
+        if (currentChatEmail === fromEmail) {
+            renderConversation(fromEmail);
+        } else {
+            loadFriends(); // unread count update
+        }
+        return;
+    }
+
+    /* =========================
+       UNKNOWN EVENT (safe ignore)
+    ========================= */
+    console.warn("Unknown WS message", msg);
+};
+
+
+    ws.onerror = () => { document.getElementById("status").innerText = "Connection Error"; };
+    ws.onclose = () => { document.getElementById("status").innerText = "Offline"; };
+
+    function sendMessage() {
+        if (!currentChatEmail) {
+            alert("Select a friend or start a new chat");
+            return;
+        }
+
+        const text = document.getElementById("messageInput").value;
+        if (!text) return;
+
+        ws.send(JSON.stringify({
+            toEmail: currentChatEmail,
+            text: text
+        }));
+
+        conversations[currentChatEmail].push({
+            from: "You",
+            text: text
+        });
+
+        renderConversation(currentChatEmail);
+        document.getElementById("messageInput").value = "";
+        loadFriends();
+    }
+
+    async function loadFriends() {
+    const [friendsRes, unread] = await Promise.all([
+        fetch("/api/friends", {
+            headers: { "Authorization": "Bearer " + token }
+        }),
+        loadUnreadCounts()
+    ]);
+
+    const friends = await friendsRes.json();
+    const list = document.getElementById("friends");
+    list.innerHTML = "";
+
+    friends.forEach(f => {
+        const li = document.createElement("li");
+
+        if (f.email === currentChatEmail) {
+            li.classList.add("active");
+        }
+
+        const count = unread[f.email] || 0;
+        const isOnline = presence[f.email] === true;
+
+        li.innerHTML = `
+            <span class="presence-dot ${isOnline ? 'online' : 'offline'}"></span>
+            <span class="friend-email">${f.email}</span>
+            ${count > 0 ? `<span class="badge">${count}</span>` : ''}
+        `;
+
+        li.onclick = () => {
+            document
+                .querySelectorAll('#friends li')
+                .forEach(el => el.classList.remove('active'));
+
+            li.classList.add('active');
+            openChat(f.email);
+        };
+
+        list.appendChild(li);
+    });
+}
+
+
+    async function loadUnreadCounts() {
+        try {
+            const res = await fetch("/api/messages/unread", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            return await res.json();
+        } catch (e) { return {}; }
+    }
+
+    async function openChat(email) {
+        currentChatEmail = email;
+        document.getElementById("chat-with").innerText = email;
+
+        const res = await fetch(`/api/messages/${email}`, {
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        conversations[email] = await res.json();
+        renderConversation(email);
+
+        // 🔥 IMPORTANT: refresh unread counts after read
+        loadFriends();
+    }
+
+
+    function startNewChat() {
+        const email = document.getElementById("newChatEmail").value;
+        if (!email) return;
+        if (!conversations[email]) conversations[email] = [];
+        openChat(email);
+    }
+
+    function renderConversation(email) {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML = "";
+
+        conversations[email].forEach(m => {
+            const isMe = m.from === "You";
+            const div = document.createElement("div");
+            div.className = `msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}`;
+
+            div.innerHTML = `
+                <span class="msg-sender">${m.from}</span>
+                <div>${m.text}</div>
+            `;
+            messagesDiv.appendChild(div);
+        });
+
+        // Auto-scroll to bottom
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+</script>
+
+</body>
+</html>

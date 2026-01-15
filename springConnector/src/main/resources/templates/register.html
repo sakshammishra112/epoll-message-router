@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Register | ChatApp</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --bg-body: #f0f2f5;
+            --text-main: #333;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .auth-card {
+            background: #fff;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-top: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box; /* Ensures padding doesn't break width */
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #msg {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            min-height: 1.2em;
+        }
+
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+
+        .login-link {
+            margin-top: 20px;
+            display: block;
+            font-size: 0.85rem;
+            color: #777;
+            text-decoration: none;
+        }
+
+        .login-link:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-card">
+    <h2>Create Account</h2>
+
+    <div class="input-group">
+        <input id="firstName" placeholder="First Name"/>
+    </div>
+    <div class="input-group">
+        <input id="lastName" placeholder="Last Name"/>
+    </div>
+    <div class="input-group">
+        <input id="email" type="email" placeholder="Email Address"/>
+    </div>
+    <div class="input-group">
+        <input id="password" type="password" placeholder="Password"/>
+    </div>
+
+    <button type="button" onclick="register()">Register</button>
+
+    <p id="msg"></p>
+
+    <a href="/login" class="login-link">Already have an account? Log in</a>
+</div>
+
+<script>
+    async function register() {
+        const msgEl = document.getElementById("msg");
+        msgEl.innerText = "Processing...";
+        msgEl.className = "";
+
+        const payload = {
+            firstName: document.getElementById("firstName").value,
+            lastName: document.getElementById("lastName").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value
+        };
+
+        try {
+            const res = await fetch("/api/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                msgEl.innerText = "Registered successfully. Redirecting to login...";
+                msgEl.className = "success";
+                setTimeout(() => window.location.href = "/login", 1500);
+            } else {
+                msgEl.innerText = "Registration failed. Please try again.";
+                msgEl.className = "error";
+            }
+        } catch (error) {
+            msgEl.innerText = "An error occurred. Please check your connection.";
+            msgEl.className = "error";
+        }
+    }
+</script>
+
+</body>
+</html>
